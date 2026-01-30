@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JHCSC Dating</title>
+    
+    <!-- Tailwind CSS (No installation needed) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
+                            400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
+                            800: '#065f46', 900: '#064e3b',
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Hide scrollbar for neatness */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-emerald-50 text-gray-800 antialiased min-h-screen relative">
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed top-4 right-4 hidden items-center gap-2 px-6 py-3 rounded-lg shadow-xl z-50 transition-all transform translate-y-[-100%] opacity-0">
+        <span id="notif-message">Message</span>
+    </div>
+
+    <!-- App Container -->
+    <div id="app"></div>
+
+    <script>
+        // --- DATA ---
+        const INITIAL_USERS = [
+            {
+                id: 1, name: "Sarah Magbanua", age: 20, gender: "Female",
+                course: "BS Agriculture", year: "3rd Year", campus: "Main Campus",
+                bio: "Love nature and sustainable farming. Looking for someone to study with! 🌱",
+                image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=60",
+                interests: ["Gardening", "Volleyball", "Reading"]
+            },
+            {
+                id: 2, name: "Mark Reyes", age: 21, gender: "Male",
+                course: "BS Info Tech", year: "4th Year", campus: "Dumingag Campus",
+                bio: "Tech enthusiast and gamer. Let's code our future together. 💻",
+                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=60",
+                interests: ["Coding", "Basketball", "Movies"]
+            },
+            {
+                id: 3, name: "Jenny Alcantara", age: 19, gender: "Female",
+                course: "B Secondary Education", year: "2nd Year", campus: "Main Campus",
+                bio: "Future educator. I love poetry and sunset watching. 🌅",
+                image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=500&q=60",
+                interests: ["Teaching", "Poetry", "Travel"]
+            },
+            {
+                id: 4, name: "Kevin Tan", age: 22, gender: "Male",
+                course: "BS Criminology", year: "4th Year", campus: "Pagadian Annex",
+                bio: "Discipline and dedication. Looking for a serious connection. 👮‍♂️",
+                image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=500&q=60",
+                interests: ["Gym", "Hiking", "Cooking"]
+            }
+        ];
+
+        // --- STATE ---
+        const state = {
+            view: 'landing', // landing, login, register, dashboard, profile
+            user: null,
+            users: [...INITIAL_USERS],
+            filter: 'All',
+            matches: [],
+            loginForm: { email: '', password: '' },
+            regForm: {
+                name: '', email: '', password: '', 
+                course: 'BS Info Tech', year: '1st Year', 
+                campus: 'Main Campus', gender: 'Female', age: '',
+                bio: '', interests: ''
+            }
+        };
+
+        // --- CORE FUNCTIONS ---
+
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = ''; // Clear current view
+
+            if (state.view === 'landing') renderLanding(app);
+            else if (state.view === 'login') renderAuth(app, false);
+            else if (state.view === 'register') renderAuth(app, true);
+            else if (state.view === 'dashboard') renderDashboard(app);
+            else if (state.view === 'profile') renderProfile(app);
+
+            // Re-initialize icons
+            lucide.createIcons();
+        }
+
+        function setView(viewName) {
+            state.view = viewName;
+            render();
+            window.scrollTo(0, 0);
+        }
+
+        function showNotification(msg, type = 'success') {
+            const notif = document.getElementById('notification');
+            const msgSpan = document.getElementById('notif-message');
+            
+            notif.className = `fixed top-4 right-4 flex items-center gap-2 px-6 py-3 rounded-lg shadow-xl z-50 transition-all duration-300 transform translate-y-0 opacity-100 ${type === 'error' ? 'bg-red-500 text-white' : 'bg-emerald-600 text-white'}`;
+            msgSpan.innerText = msg;
+            notif.classList.remove('hidden');
+
+            setTimeout(() => {
+                notif.classList.add('translate-y-[-100%]', 'opacity-0');
+                setTimeout(() => notif.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        // --- ACTIONS ---
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const { email, password } = state.loginForm;
+            const foundUser = state.users.find(u => u.email === email);
+            
+            // Simple logic for demo
+            if (foundUser && foundUser.password === password) {
+                state.user = foundUser;
+                showNotification(`Welcome back, ${foundUser.name}!`);
+                setView('dashboard');
+            } else if (email && password) {
+                // Allow demo login if not found in list but fields are filled (simulating backend)
+                // For realism, let's say "User not found" unless it matches specific mock logic or we just create a session
+                showNotification('User not found. Please register.', 'error');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const form = state.regForm;
+            
+            const newUser = {
+                id: Date.now(),
+                ...form,
+                image: `https://ui-avatars.com/api/?name=${form.name}&background=10b981&color=fff`,
+                interests: form.interests.split(',').map(i => i.trim())
+            };
+
+            state.users.push(newUser);
+            state.user = newUser;
+            showNotification('Account created successfully!');
+            setView('dashboard');
+        }
+
+        function toggleLike(id) {
+            const index = state.matches.indexOf(id);
+            if (index > -1) {
+                state.matches.splice(index, 1);
+                showNotification('Removed from favorites', 'error');
+            } else {
+                state.matches.push(id);
+                showNotification("It's a match! 💚");
+            }
+            render(); // Re-render to update button state
+        }
+
+        // --- COMPONENT RENDERERS ---
+
+        function renderLanding(container) {
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 to-green-100">
+                    <nav class="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+                        <div class="flex items-center gap-2 font-bold text-2xl text-emerald-800">
+                            <i data-lucide="school" class="w-8 h-8"></i>
+                            <span>JHCSC Link</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="setView('login')" class="text-emerald-700 hover:bg-emerald-100 px-4 py-2 rounded-lg font-medium transition">Log In</button>
+                            <button onclick="setView('register')" class="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg font-medium shadow-md transition">Join Now</button>
+                        </div>
+                    </nav>
+
+                    <main class="flex-1 flex flex-col md:flex-row items-center justify-center max-w-7xl mx-auto w-full p-6 gap-12">
+                        <div class="md:w-1/2 space-y-6 animate-fade-in">
+                            <div class="inline-block px-4 py-1 bg-emerald-200 text-emerald-800 rounded-full text-sm font-semibold mb-2">
+                                Exclusively for JHCSC Students
+                            </div>
+                            <h1 class="text-5xl md:text-6xl font-extrabold text-emerald-900 leading-tight">
+                                Find Your <span class="text-emerald-600">Study Buddy</span> or <span class="text-emerald-600">Soulmate</span>
+                            </h1>
+                            <p class="text-lg text-emerald-700/80 max-w-md">
+                                Connect with fellow students across all JH Cerilles State College campuses. Build relationships that last beyond graduation.
+                            </p>
+                            <div class="flex gap-4 pt-4">
+                                <button onclick="setView('register')" class="bg-emerald-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-emerald-700 transition flex items-center gap-2">
+                                    Start Matching <i data-lucide="chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="md:w-1/2 relative hidden md:block">
+                            <div class="absolute top-0 right-0 w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+                            <div class="absolute -bottom-8 -left-4 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" style="animation-delay: 2s"></div>
+                            <div class="relative bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-2xl transform rotate-3 hover:rotate-0 transition-all duration-500">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <img src="${INITIAL_USERS[0].image}" class="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" alt="Student" />
+                                    <div>
+                                        <h3 class="font-bold text-emerald-900">Sarah Magbanua</h3>
+                                        <p class="text-emerald-600 text-sm">BS Agriculture • 3rd Year</p>
+                                    </div>
+                                    <div class="ml-auto bg-white p-2 rounded-full shadow-sm">
+                                        <i data-lucide="heart" class="text-red-500 fill-red-500 w-5 h-5"></i>
+                                    </div>
+                                </div>
+                                <div class="bg-emerald-50 p-4 rounded-xl text-emerald-800 italic text-sm">
+                                    "Looking for someone to study with! 🌱"
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            `;
+        }
+
+        function renderAuth(container, isRegister) {
+            const title = isRegister ? "Join the Community" : "Welcome Back";
+            const subtitle = isRegister ? "Create your student profile" : "Log in to continue matching";
+
+            // We generate the form HTML dynamically based on register vs login
+            let fieldsHTML = '';
+            
+            if (isRegister) {
+                fieldsHTML = `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-emerald-900 mb-1">Full Name</label>
+                        <input type="text" oninput="state.regForm.name = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Juan Dela Cruz" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-emerald-900 mb-1">Gender</label>
+                            <select onchange="state.regForm.gender = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none bg-white">
+                                <option>Female</option><option>Male</option><option>Non-binary</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-emerald-900 mb-1">Age</label>
+                            <input type="number" oninput="state.regForm.age = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none" placeholder="20">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-emerald-900 mb-1">Campus</label>
+                        <select onchange="state.regForm.campus = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none bg-white">
+                            <option>Main Campus</option>
+                            <option>Dumingag Campus</option>
+                            <option>Pagadian Annex</option>
+                            <option>Canuto MS Enerio</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-emerald-900 mb-1">Course</label>
+                            <select onchange="state.regForm.course = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none bg-white">
+                                <option>BS Info Tech</option><option>BS Agriculture</option><option>BS Education</option><option>BS Criminology</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-emerald-900 mb-1">Year</label>
+                            <select onchange="state.regForm.year = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none bg-white">
+                                <option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-emerald-900 mb-1">Bio</label>
+                        <input type="text" oninput="state.regForm.bio = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none" placeholder="Short description...">
+                    </div>
+                     <div class="mb-4">
+                        <label class="block text-sm font-medium text-emerald-900 mb-1">Interests</label>
+                        <input type="text" oninput="state.regForm.interests = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none" placeholder="Reading, Gaming, etc">
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                <div class="min-h-screen bg-emerald-50 flex items-center justify-center p-4">
+                    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-emerald-100 animate-fade-in">
+                        <div class="text-center mb-8">
+                            <div class="inline-flex p-3 bg-emerald-100 rounded-full mb-4 text-emerald-600">
+                                <i data-lucide="school" class="w-8 h-8"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-emerald-900">${title}</h2>
+                            <p class="text-emerald-600">${subtitle}</p>
+                        </div>
+                        
+                        <form onsubmit="${isRegister ? 'handleRegister(event)' : 'handleLogin(event)'}">
+                            ${fieldsHTML}
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-emerald-900 mb-1">Email</label>
+                                <input type="email" oninput="state.${isRegister ? 'regForm' : 'loginForm'}.email = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none" placeholder="student@jhcsc.edu.ph" required>
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-emerald-900 mb-1">Password</label>
+                                <input type="password" oninput="state.${isRegister ? 'regForm' : 'loginForm'}.password = this.value" class="w-full px-4 py-2 border border-emerald-200 rounded-lg outline-none" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-lg hover:bg-emerald-700 transition shadow-md">
+                                ${isRegister ? 'Create Account' : 'Log In'}
+                            </button>
+                        </form>
+
+                        <div class="mt-6 text-center text-sm text-emerald-800">
+                            ${isRegister ? "Already have an account? " : "New to JHCSC Link? "}
+                            <button onclick="setView('${isRegister ? 'login' : 'register'}')" class="font-bold underline hover:text-emerald-600">
+                                ${isRegister ? "Log In" : "Register Here"}
+                            </button>
+                        </div>
+                        <div class="mt-4 text-center">
+                             <button onclick="setView('landing')" class="text-xs text-gray-400 hover:text-emerald-600">Back to Home</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDashboard(container) {
+            const filtered = state.users.filter(u => 
+                u.id !== state.user?.id && 
+                (state.filter === 'All' || u.course === state.filter || u.campus === state.filter)
+            );
+
+            const cardsHTML = filtered.length ? filtered.map(u => {
+                const isLiked = state.matches.includes(u.id);
+                return `
+                <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-emerald-100 overflow-hidden group">
+                    <div class="relative h-64 overflow-hidden">
+                        <img src="${u.image}" alt="${u.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-90"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white w-full">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                ${u.name}, ${u.age}
+                            </h3>
+                            <p class="text-emerald-200 text-sm flex items-center gap-1">
+                                <i data-lucide="map-pin" class="w-3 h-3"></i> ${u.campus}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex gap-2 mb-3 text-xs text-gray-600 font-medium">
+                            <span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md border border-emerald-100">${u.course}</span>
+                            <span class="bg-orange-50 text-orange-700 px-2 py-1 rounded-md border border-orange-100">${u.year}</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-2 italic">"${u.bio}"</p>
+                        <div class="flex gap-2 mt-auto">
+                            <button onclick="toggleLike(${u.id})" class="flex-1 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors ${isLiked ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-emerald-50 hover:text-emerald-600'}">
+                                <i data-lucide="heart" class="w-4 h-4 ${isLiked ? 'fill-current' : ''}"></i>
+                                ${isLiked ? 'Connected' : 'Connect'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('') : `<div class="col-span-full text-center py-10 text-gray-500">No students found.</div>`;
+
+            const filters = ['All', 'Main Campus', 'BS Info Tech', 'BS Agriculture'];
+            const filterBtns = filters.map(f => 
+                `<button onclick="state.filter='${f}'; render()" class="px-3 py-1 text-xs md:text-sm rounded-md transition-colors ${state.filter === f ? 'bg-white text-emerald-800 shadow-sm font-bold' : 'text-emerald-200 hover:text-white'}">${f}</button>`
+            ).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen bg-gray-50 pb-20">
+                    <header class="bg-emerald-700 text-white shadow-lg sticky top-0 z-30">
+                        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                            <div class="flex items-center gap-2 font-bold text-xl">
+                                <i data-lucide="school"></i>
+                                <span class="hidden md:inline">JHCSC Link</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="hidden md:flex bg-emerald-800 rounded-lg p-1">
+                                    ${filterBtns}
+                                </div>
+                                <button onclick="setView('profile')" class="flex items-center gap-2 hover:bg-emerald-600 px-3 py-1.5 rounded-lg transition-colors">
+                                    <img src="${state.user?.image}" class="w-8 h-8 rounded-full border border-white/50" />
+                                    <span class="text-sm font-medium hidden sm:block">${state.user?.name}</span>
+                                </button>
+                                <button onclick="state.user=null; setView('landing')" class="text-emerald-200 hover:text-white">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="md:hidden flex overflow-x-auto p-2 bg-emerald-800 space-x-2">
+                             ${filterBtns}
+                        </div>
+                    </header>
+                    <main class="max-w-7xl mx-auto px-4 py-8">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+                            ${cardsHTML}
+                        </div>
+                    </main>
+                </div>
+            `;
+        }
+
+        function renderProfile(container) {
+            const u = state.user;
+            container.innerHTML = `
+                <div class="min-h-screen bg-gray-50">
+                    <div class="bg-emerald-700 h-48 relative">
+                        <button onclick="setView('dashboard')" class="absolute top-4 left-4 text-white bg-black/20 p-2 rounded-full hover:bg-black/30 backdrop-blur-sm transition">
+                            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <div class="max-w-2xl mx-auto px-4 -mt-24 relative z-10 animate-fade-in">
+                        <div class="bg-white rounded-2xl shadow-lg p-6 border border-emerald-100">
+                            <div class="flex flex-col items-center -mt-20 mb-6">
+                                <img src="${u.image}" class="w-32 h-32 rounded-full border-4 border-white shadow-md bg-white" />
+                                <h2 class="text-2xl font-bold text-gray-900 mt-4">${u.name}</h2>
+                                <p class="text-emerald-600 font-medium">${u.course} • ${u.year}</p>
+                            </div>
+                            <div class="space-y-6">
+                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                    <h3 class="text-sm font-bold text-emerald-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <i data-lucide="user" class="w-4 h-4"></i> About Me
+                                    </h3>
+                                    <p class="text-gray-700 leading-relaxed">${u.bio}</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                    <div class="flex items-center gap-3 mb-2 text-emerald-700">
+                                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                                        <span class="font-semibold">Interests</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${u.interests.map(i => `<span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs">${i}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="border-t pt-6 text-center">
+                                    <button onclick="state.user=null; setView('landing')" class="text-red-500 hover:text-red-600 font-medium flex items-center justify-center gap-2 mx-auto">
+                                        <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- INIT ---
+        render(); // Start the app
+    </script>
+</body>
+</html>
