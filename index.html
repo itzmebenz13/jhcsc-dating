@@ -70,7 +70,7 @@
         .chat-theirs { background: #e5e7eb; color: #1f2937; margin-right: auto; border-bottom-left-radius: 4px; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen relative overflow-x-hidden selection:bg-brand-200 selection:text-brand-900">
+<body class="text-gray-800 antialiased h-screen w-screen overflow-hidden relative selection:bg-brand-200 selection:text-brand-900">
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[60] transition-all duration-300 translate-y-[-150%] opacity-0">
@@ -81,7 +81,7 @@
     </div>
 
     <!-- Main App Container -->
-    <div id="app" class="pb-20 md:pb-0"></div>
+    <div id="app" class="h-full w-full"></div>
 
     <script>
         // --- MOCK DATA ---
@@ -103,49 +103,49 @@
         ];
 
         const USERS = [
-            {
+            { 
                 id: 1, name: "Sarah Magbanua", age: 20, gender: "Female", course: "BS Agriculture", year: "3rd Year", campus: "Main Campus",
                 bio: "Sustainable farming advocate. Looking for a study buddy for Soil Science! 🌱",
                 image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80",
                 interests: ["Nature", "Volleyball", "Coffee"], online: true
             },
-            {
+            { 
                 id: 2, name: "Mark Reyes", age: 21, gender: "Male", course: "BS Info Tech", year: "4th Year", campus: "Dumingag",
                 bio: "Full stack developer. Let's debug life together. 💻",
                 image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
                 interests: ["Coding", "Valorant", "Anime"], online: false
             },
-            {
+            { 
                 id: 3, name: "Jenny Alcantara", age: 19, gender: "Female", course: "B Secondary Ed", year: "2nd Year", campus: "Main Campus",
                 bio: "Future educator. I love poetry and watching sunsets at the oval. 🌅",
                 image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80",
                 interests: ["Teaching", "Poetry", "Travel"], online: true
             },
-            {
+            { 
                 id: 4, name: "Kevin Tan", age: 22, gender: "Male", course: "BS Criminology", year: "4th Year", campus: "Pagadian Annex",
                 bio: "Discipline is key. Looking for a serious connection. 👮‍♂️",
                 image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80",
                 interests: ["Gym", "Hiking", "Cooking"], online: false
             },
-            {
+            { 
                 id: 5, name: "Bea Alonzo", age: 20, gender: "Female", course: "BS Nursing", year: "2nd Year", campus: "Main Campus",
                 bio: "Caring and sweet. Just want someone to unwind with after clinicals. 💉",
                 image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80",
                 interests: ["Health", "Movies", "Dogs"], online: true
             },
-            {
+            { 
                 id: 6, name: "Miguel Santos", age: 21, gender: "Male", course: "BS Civil Engineering", year: "3rd Year", campus: "Main Campus",
                 bio: "Math wiz looking for gym buddies. 💪",
                 image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
                 interests: ["Calculus", "Gym", "Chess"], online: false
             },
-            {
+            { 
                 id: 7, name: "Sofia Garcia", age: 19, gender: "Female", course: "BA English", year: "1st Year", campus: "Canuto MS Enerio",
                 bio: "Bookworm and coffee addict. Let's explore local cafes!",
                 image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
                 interests: ["Books", "Coffee", "Writing"], online: true
             },
-            {
+            { 
                 id: 8, name: "Rico J. Puno", age: 23, gender: "Male", course: "BS Agriculture", year: "4th Year", campus: "Dumingag",
                 bio: "Music lover and guitarist. Jam sessions? 🎸",
                 image: "https://images.unsplash.com/photo-1480455624313-e29b44bbfde1?auto=format&fit=crop&w=600&q=80",
@@ -189,7 +189,6 @@
             state.view = view;
             if (view === 'chat' && param) state.activeChatId = param;
             render();
-            window.scrollTo(0, 0);
         }
 
         function showToast(msg, iconType = 'success') {
@@ -307,7 +306,7 @@
 
         function renderLanding(container) {
             container.innerHTML = `
-                <div class="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-brand-50">
+                <div class="relative h-full w-full flex flex-col items-center justify-center overflow-hidden bg-brand-50">
                     <!-- Decor Blobs -->
                     <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-brand-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float"></div>
                     <div class="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-float" style="animation-delay: 2s"></div>
@@ -358,7 +357,7 @@
         function renderAuthForm(container) {
             const isReg = state.view === 'register';
             container.innerHTML = `
-                <div class="h-screen w-full flex overflow-hidden bg-white">
+                <div class="h-full w-full flex overflow-hidden bg-white">
                     <!-- Left Side: Visuals (Desktop only) -->
                     <div class="hidden md:flex w-1/2 lg:w-3/5 bg-brand-900 relative items-center justify-center overflow-hidden">
                         <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1500&auto=format&fit=crop')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
@@ -389,12 +388,7 @@
 
                     <!-- Right Side: Form -->
                     <div class="w-full md:w-1/2 lg:w-2/5 flex flex-col justify-center p-8 md:p-12 lg:p-16 relative">
-                         <button onclick="setView('landing')" class="absolute top-6 left-6 md:top-8 md:left-8 text-gray-400 hover:text-brand-600 flex items-center gap-2 transition group">
-                            <div class="bg-gray-50 p-2 rounded-full group-hover:bg-brand-50 transition">
-                                <i data-lucide="arrow-left" class="w-5 h-5"></i>
-                            </div>
-                            <span class="text-sm font-medium">Back to Home</span>
-                        </button>
+                         <!-- Removed Back to Home button -->
 
                         <div class="max-w-sm mx-auto w-full animate-slide-up">
                             <div class="mb-8">
@@ -491,7 +485,7 @@
             `;
 
             container.innerHTML = `
-                <div class="min-h-screen bg-gray-50 flex flex-col md:flex-row">
+                <div class="h-full w-full bg-gray-50 flex flex-col md:flex-row overflow-hidden">
                     <div class="hidden md:block w-64 flex-shrink-0 z-50">
                         <!-- Desktop Sidebar Placeholder -->
                         <div class="fixed h-full w-64 bg-white border-r border-gray-200 p-6">
@@ -510,20 +504,20 @@
                         </div>
                     </div>
                     
-                    <div class="flex-1 flex flex-col min-h-screen pb-20 md:pb-0">
+                    <div class="flex-1 flex flex-col h-full relative">
                         <!-- Mobile Top Bar only -->
-                        <div class="md:hidden">
+                        <div class="md:hidden flex-shrink-0">
                             ${topBar}
                         </div>
                         
-                        <main class="flex-1 overflow-y-auto">
+                        <main class="flex-1 overflow-y-auto pb-20 md:pb-0">
                             ${contentHTML}
                         </main>
-                    </div>
 
-                    <!-- Mobile Bottom Nav only -->
-                    <div class="md:hidden">
-                        ${bottomNav}
+                        <!-- Mobile Bottom Nav only -->
+                        <div class="md:hidden">
+                            ${bottomNav}
+                        </div>
                     </div>
                 </div>
             `;
@@ -692,7 +686,7 @@
             `).join('');
 
             return `
-                <div class="flex flex-col h-[calc(100vh-64px)] md:h-screen bg-white">
+                <div class="flex flex-col h-full bg-white">
                     <!-- Header -->
                     <div class="flex items-center gap-3 p-3 border-b border-gray-100 shadow-sm z-10 sticky top-0 bg-white/90 backdrop-blur">
                         <button onclick="setView('messages')" class="p-2 hover:bg-gray-100 rounded-full">
@@ -712,7 +706,7 @@
                     </div>
 
                     <!-- Input -->
-                    <div class="p-3 bg-white border-t border-gray-100 pb-20 md:pb-3">
+                    <div class="p-3 bg-white border-t border-gray-100">
                         <form onsubmit="sendMessage(event)" class="flex gap-2">
                             <button type="button" class="p-3 text-gray-400 hover:bg-gray-100 rounded-full transition">
                                 <i data-lucide="plus" class="w-6 h-6"></i>
